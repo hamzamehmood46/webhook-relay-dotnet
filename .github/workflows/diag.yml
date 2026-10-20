@@ -1,0 +1,42 @@
+name: diag
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Run tests and keep the output
+        run: |
+          mkdir -p /tmp/out
+          dotnet test tests/Relay.Tests -c Release --logger "console;verbosity=normal" > /tmp/out/result.txt 2>&1 || true
+          echo "sha: ${GITHUB_SHA}" >> /tmp/out/result.txt
+      - name: Publish the test output
+        run: |
+          git config user.name ci
+          git config user.email ci@example.com
+          git checkout --orphan ci-log
+          git rm -rf . > /dev/null 2>&1 || true
+          cp /tmp/out/result.txt result.txt
+          git add result.txt
+          git commit -m "test output"
+          git push -f origin ci-log
+      - name: Back to the source
+        run: git checkout -f ${GITHUB_SHA}
+      - name: Mutation checks
+        run: |
+          python3 .ci/mutate.py tests/Relay.Tests > /tmp/out/mutation.txt 2>&1 || true
+      - name: Publish everything
+        run: |
+          git checkout -f ci-log
+          cp /tmp/out/mutation.txt mutation.txt
+          git add mutation.txt
+          git commit -m "mutation output"
+          git push -f origin ci-log

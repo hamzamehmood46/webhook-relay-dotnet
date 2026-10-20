@@ -1,0 +1,254 @@
+[
+    {
+        "label":  "any signature accepted",
+        "new":  "matched |= true;",
+        "old":  "matched |= CryptographicOperations.FixedTimeEquals(expected, candidate);",
+        "file":  "src/Relay.Engine/Signing.cs"
+    },
+    {
+        "label":  "stale timestamps accepted",
+        "new":  "return VerifyResult.Valid;",
+        "old":  "return age \u003e tolerance.TotalSeconds ? VerifyResult.OutsideTolerance : VerifyResult.Valid;",
+        "file":  "src/Relay.Engine/Signing.cs"
+    },
+    {
+        "label":  "tolerance boundary off by one",
+        "new":  "age \u003e= tolerance.TotalSeconds",
+        "old":  "age \u003e tolerance.TotalSeconds",
+        "file":  "src/Relay.Engine/Signing.cs"
+    },
+    {
+        "label":  "github body not checked",
+        "new":  "AnyMatch(secrets, \"\", [candidate])",
+        "old":  "AnyMatch(secrets, body, [candidate])",
+        "file":  "src/Relay.Engine/Signing.cs"
+    },
+    {
+        "label":  "prefix matches sibling types",
+        "new":  "var prefix = pattern[..^2];",
+        "old":  "var prefix = pattern[..^1];",
+        "file":  "src/Relay.Engine/Matching.cs"
+    },
+    {
+        "label":  "prefix matches the bare name",
+        "new":  "type.Length \u003e= prefix.Length",
+        "old":  "type.Length \u003e prefix.Length",
+        "file":  "src/Relay.Engine/Matching.cs"
+    },
+    {
+        "label":  "event types case sensitive",
+        "new":  "string.Equals(pattern, type, StringComparison.Ordinal)",
+        "old":  "string.Equals(pattern, type, StringComparison.OrdinalIgnoreCase)",
+        "file":  "src/Relay.Engine/Matching.cs"
+    },
+    {
+        "label":  "payload condition ignored",
+        "new":  "return true;",
+        "old":  "return value is not null \u0026\u0026 string.Equals(value, condition.Value, StringComparison.Ordinal);",
+        "file":  "src/Relay.Engine/Matching.cs"
+    },
+    {
+        "label":  "duplicates not detected",
+        "new":  "\u0026\u0026 now - earlier.At \u003c TimeSpan.Zero",
+        "old":  "\u0026\u0026 now - earlier.At \u003c _options.DedupeWindow",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "dedupe never expires",
+        "new":  ")",
+        "old":  "\u0026\u0026 now - earlier.At \u003c _options.DedupeWindow)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "dedupe forgets too early",
+        "new":  "var cutoff = Now - TimeSpan.FromMinutes(1);",
+        "old":  "var cutoff = Now - _options.DedupeWindow;",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "body hash id is random",
+        "new":  "Guid.NewGuid().ToString()",
+        "old":  "Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(body))).ToLowerInvariant()",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "missing type not unknown",
+        "new":  "?? \"\"",
+        "old":  "?? \"unknown\"",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "paused source still accepts",
+        "new":  "if (false)",
+        "old":  "if (source.Paused)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "rate limit off by one",
+        "new":  "if (recent.Count \u003e source.RatePerMinute)",
+        "old":  "if (recent.Count \u003e= source.RatePerMinute)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "rate window never slides at the edge",
+        "new":  "now - recent.Peek() \u003e TimeSpan.FromMinutes(1)",
+        "old":  "now - recent.Peek() \u003e= TimeSpan.FromMinutes(1)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "old secret valid forever",
+        "new":  "source.PreviousSecret is not null",
+        "old":  "source.PreviousSecret is not null \u0026\u0026 source.PreviousSecretValidUntil \u003e now",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "rotation drops the old secret at once",
+        "new":  "",
+        "old":  "source.PreviousSecret = source.Secret;",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "expired reported as unauthorized",
+        "new":  "new(IngestOutcome.Unauthorized, \"The signature is valid",
+        "old":  "new(IngestOutcome.Expired, \"The signature is valid",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "body limit off by one",
+        "new":  "\u003e= _options.MaxBodyBytes",
+        "old":  "\u003e _options.MaxBodyBytes",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "same destination delivered twice",
+        "new":  "",
+        "old":  " \u0026\u0026 queued.Add(destination.Id)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "disabled destination still routed",
+        "new":  ")\n                    {\n                        continue;",
+        "old":  "|| !destination.Enabled)\n                    {\n                        continue;",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "retry backoff skips a step",
+        "new":  "Math.Min(delivery.Attempts, _options.Backoff.Length - 1)",
+        "old":  "Math.Min(delivery.Attempts - 1, _options.Backoff.Length - 1)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "one attempt too many",
+        "new":  "if (delivery.Attempts \u003e _options.MaxAttempts)",
+        "old":  "if (delivery.Attempts \u003e= _options.MaxAttempts)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "client errors retried",
+        "new":  "false \u0026\u0026",
+        "old":  "result.StatusCode is \u003e= 400 and \u003c 500 \u0026\u0026",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "429 treated as final",
+        "new":  "is not 408",
+        "old":  "is not (408 or 429)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "410 does not switch the destination off",
+        "new":  "destination.DisabledReason = \"Answered 410 Gone.\"; destination.Enabled = true;",
+        "old":  "destination.DisabledReason = \"Answered 410 Gone.\";",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "retry-after can shorten the wait",
+        "new":  "Math.Min(asked.Ticks, _options.MaxRetryAfter.Ticks)",
+        "old":  "Math.Max(wait.Ticks, Math.Min(asked.Ticks, _options.MaxRetryAfter.Ticks))",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "retry-after not capped",
+        "new":  "asked.Ticks",
+        "old":  "Math.Min(asked.Ticks, _options.MaxRetryAfter.Ticks)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "circuit opens one failure late",
+        "new":  "if (destination.ConsecutiveFailures \u003e _options.CircuitThreshold)",
+        "old":  "if (destination.ConsecutiveFailures \u003e= _options.CircuitThreshold)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "unlimited probes",
+        "new":  "if (false)",
+        "old":  "if (!probing.Add(destination.Id))",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "probe waits one tick too long",
+        "new":  "if (until \u003e= now)",
+        "old":  "if (until \u003e now)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "breaker ignored mid-run",
+        "new":  "if (false)",
+        "old":  "if (destination.CircuitOpenUntil is { } until \u0026\u0026 until \u003e now)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "success keeps the failure count",
+        "new":  "delivery.LastError = null;",
+        "old":  "delivery.LastError = null;\n            destination.ConsecutiveFailures = 0;",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "disabled destination not held",
+        "new":  "if (false)\n                {\n                    continue;",
+        "old":  "if (!destination.Enabled)\n                {\n                    continue;",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "in-flight guard removed",
+        "new":  "d.IsOpen \u0026\u0026 d.NextAttemptAt \u003c= now",
+        "old":  "d.IsOpen \u0026\u0026 !d.InFlight \u0026\u0026 d.NextAttemptAt \u003c= now",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "stale signature timestamp",
+        "new":  "Signing.SignOutbound(destination.Secret, inbound.Id, delivery.CreatedAt.ToUnixTimeSeconds(), inbound.Body)",
+        "old":  "Signing.SignOutbound(destination.Secret, inbound.Id, now.ToUnixTimeSeconds(), inbound.Body)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "open delivery can be replayed",
+        "new":  "if (false)",
+        "old":  "if (original.IsOpen)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "dead letters replayed twice",
+        "new":  "Queue(inbound, destinationId",
+        "old":  "original.Replayed = true;\n                Queue(inbound, destinationId",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "replayed event duplicates a destination",
+        "new":  "",
+        "old":  "created.All(c =\u003e c.DestinationId != route.DestinationId) \u0026\u0026",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "retention off by one",
+        "new":  "while (_eventOrder.Count \u003e= MaxEventsKept)",
+        "old":  "while (_eventOrder.Count \u003e MaxEventsKept)",
+        "file":  "src/Relay.Engine/RelayHub.cs"
+    },
+    {
+        "label":  "duplicate answered 202",
+        "new":  "IngestOutcome.Duplicate =\u003e 202",
+        "old":  "IngestOutcome.Duplicate =\u003e 200",
+        "file":  "src/Relay.Engine/Models.cs"
+    }
+]
