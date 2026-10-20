@@ -59,7 +59,7 @@ public sealed class Rig
     public Rig(RelayOptions? options = null, bool routes = true)
     {
         Hub = new RelayHub(Clock, options);
-        Source = Hub.AddSource("Payments", SignatureScheme.Timestamped, "whsec_test").Value!;
+        Source = Hub.AddSource("Payments", SignatureScheme.Timestamped, "whsec_test", ratePerMinute: 100_000).Value!;
         Billing = Hub.AddDestination("Billing", "demo://healthy").Value!;
         Audit = Hub.AddDestination("Audit log", "demo://healthy").Value!;
         if (routes)

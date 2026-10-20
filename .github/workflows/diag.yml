@@ -33,6 +33,7 @@ jobs:
       - name: Mutation checks
         run: |
           python3 .ci/mutate.py tests/Relay.Tests > /tmp/out/mutation.txt 2>&1 || true
+          echo "sha: ${GITHUB_SHA}" >> /tmp/out/mutation.txt
       - name: Publish everything
         run: |
           git checkout -f ci-log
